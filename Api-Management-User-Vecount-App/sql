@@ -1,0 +1,40 @@
+-- Drop tabel jika sudah ada (opsional)
+DROP TABLE IF EXISTS user_status;
+DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS user_role;
+DROP TYPE IF EXISTS user_status_type;
+
+-- Buat enum untuk role dan status
+CREATE TYPE user_role AS ENUM ('admin', 'user');
+CREATE TYPE user_status_type AS ENUM ('online', 'offline');
+
+-- Buat tabel users dengan imageUrl (camelCase)
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    fullname TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    role user_role DEFAULT 'user' NOT NULL,
+    phone TEXT,
+    bio TEXT,
+    "imageUrl" TEXT,  -- Gunakan quotes untuk nama kolom camelCase
+    otp TEXT,
+    "otpExpiry" TIMESTAMP WITH TIME ZONE,
+    "isActive" BOOLEAN DEFAULT FALSE,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Buat tabel user_status
+CREATE TABLE user_status (
+    id BIGSERIAL PRIMARY KEY,
+    "userId" BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    status user_status_type DEFAULT 'offline',
+    "lastSeen" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Buat index
+CREATE INDEX users_email_idx ON users(email);
+CREATE INDEX user_status_user_id_idx ON user_status("userId");
